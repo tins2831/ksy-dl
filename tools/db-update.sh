@@ -27,12 +27,12 @@ echo "[ + ] Updating the git repo...    (${KAITAI_FMT_REPO})"
 
 cd $KAITAI_FMT_REPO
 ERROR_PRONE=$(git fetch -q origin master;git merge)
-GIT_ECODE=$?
 
+EXIT_CODE_PRESERVED=$?
 if [[ $? -ne 0 ]]; then
     echo "[ - ] Updating failed. Output of git:" 1>&2
     echo "${ERROR_PRONE}"
-    exit $GIT_ECODE
+    exit $EXIT_CODE_PRESERVED
 fi
 
 PULL_RESULT=$(echo $ERROR_PRONE | tail -n1)
@@ -84,16 +84,18 @@ def main(flist):
 main(sys.argv[1])
 ' "${FLIST}")
 
-if [[ $? -ne 0 ]]; then
+EXIT_CODE_PRESERVED=$?
+if [[ $EXIT_CODE_PRESERVED -ne 0 ]]; then
     echo "[ - ] Failed to produce the updated DB." 1>&2
-    exit 1
+    exit $EXIT_CODE_PRESERVED
 fi
 
 echo "${PY_OUTPUT}" > $DB_FILE
 
-if [[ $? -ne 0 ]]; then
+EXIT_CODE_PRESERVED=$?
+if [[ $EXIT_CODE_PRESERVED -ne 0 ]]; then
     echo "[ - ] Failed to update the DB." 1>&2
-    exit 1
+    exit $EXIT_CODE_PRESERVED
 fi
 
 echo "[ + ] Done."
