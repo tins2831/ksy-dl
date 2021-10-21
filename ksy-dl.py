@@ -1,7 +1,7 @@
 import atexit
+import json
 import os
 import sys
-import re
 import yaml
 
 from bs4 import BeautifulSoup
@@ -10,9 +10,18 @@ from http import HTTPStatus
 from http.client import HTTPConnection, HTTP_PORT
 
 BASE_DOMAIN = "formats.kaitai.io"
-SANITIZE_RGX = "[A-Za-z0-9._\\-]+/([A-Za-z0-9._\\-]+)"
+DB_FILE = os.path.join(os.path.dirname(__file__), 'format-db.json')
+
+def load_ksy_db():
+    db_fobj = open(DB_FILE, 'r')
+    db_data = db_fobj.read()
+
+    db_fobj.close()
+
+    return json.loads(db_data)
 
 ksy_cache = {}
+ksy_db = load_ksy_db()
 
 class FixDumper(yaml.Dumper):
     # https://github.com/yaml/pyyaml/issues/234#issuecomment-765894586
@@ -27,15 +36,24 @@ class FixDumper(yaml.Dumper):
         return dumper.represent_scalar('tag:yaml.org,2002:str', data)
 
 def sanitize_spec(ksy_spec):
-    match = re.search(SANITIZE_RGX, ksy_spec)
+    spec = ksy_spec.split('/')[-1]
 
-    if match is None:
-        print("[ - ] Invalid KSY specification passed: %s" % ksy_spec,
+    if spec not in ksy_db:
+        print("[ - ] Unknown KSY specification passed: %s" % ksy_spec,
             file = sys.stderr)
 
         sys.exit(1)
 
-    return re.sub("\\.\\w+$", "", match[1])
+    if '/' in ksy_spec:
+        category = ksy_spec.split('/')[0]
+
+        if len(category) != 0 and category != ksy_db[spec]:
+            print("[ - ] Unknown KSY category : %s" % category,
+                file = sys.stderr)
+
+            sys.exit(1)
+
+    return spec.strip('/')
 
 def get_page(httpcon, ksy_spec):
     httpcon.request(
@@ -96,6 +114,9 @@ def process_code_section(httpcon, tag, ksy_spec):
 
 def process_page(httpcon, bsoup, ksy_spec):
     for tag in bsoup.body:
+        if ksy_spec.find('/') <= 0: # matches "/ksy_spec" and "ksy_spec"
+            if tag.name == 'nav':
+                pass
         if tag.name != 'section':
             continue
 
@@ -105,6 +126,7 @@ def process_page(httpcon, bsoup, ksy_spec):
             process_code_section(httpcon, tag, ksy_spec)
 
 def main(initial_ksy_spec):
+    initial_ksy_spec = ksy_db[initial_ksy_spec] + '/' + initial_ksy_spec
     httpcon = httpcon_setup()
     bsoup = BeautifulSoup(get_page(httpcon, initial_ksy_spec), 'html.parser',
         multi_valued_attributes = None)
@@ -113,6 +135,7 @@ def main(initial_ksy_spec):
 
     for ksy_spec in ksy_cache:
         yaml_obj = ksy_cache[ksy_spec]
+        ksy_spec = os.path.join(output_dir, ksy_spec.strip('/'))
 
         if 'meta' in yaml_obj and 'imports' in yaml_obj['meta']:
 
@@ -122,9 +145,10 @@ def main(initial_ksy_spec):
                 ksy_import = ksy_import.strip('/')
 
                 if os.path.dirname(ksy_import) != initial_ksy_dir:
-                    continue
+                    ksy_import = '../' + ksy_import
+                else:
+                    ksy_import = ksy_import.replace(initial_ksy_dir, '.')
 
-                ksy_import = ksy_import.replace(initial_ksy_dir, '.')
                 yaml_obj['meta']['imports'][idx] = ksy_import
 
         if not ksy_spec.endswith('.ksy'):
@@ -152,4 +176,15 @@ def main(initial_ksy_spec):
     httpcon.close()
 
 yaml.add_representer(str, FixDumper.str_presenter)
-main(sys.argv[1])
+
+try:
+    # this first call to sanitize_spec will verify and extract
+    # the spec name if the category is present in the input str
+    query = sanitize_spec(sys.argv[1])
+    output_dir = sys.argv[2]
+except IndexError:
+    print("usage: python3 ksy-dl.py QUERY OUTPUT_DIR",
+        file = sys.stderr)
+    sys.exit(1)
+
+main(query)
