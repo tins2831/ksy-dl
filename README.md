@@ -1,4 +1,4 @@
-# KSY-DL
+# ksy-dl
 Downloads `.ksy` files and their dependecies straight from the official kaitai-struct [format gallery](http://formats.kaitai.io/).
 
 ### Requirements
@@ -23,7 +23,7 @@ $ python3 ksy-dl.py "pcap.ksy"
 # python3 ksy-dl.py "google_protobuf"
 ```
 
-### Auto-updating the DB
+### Auto-updating the database
 First, clone the kaitai format gallery from github:
 ```
 $ git clone https://github.com/kaitai-io/kaitai_struct_formats.git
