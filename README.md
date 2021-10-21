@@ -16,11 +16,11 @@ usage: python3 ksy-dl.py QUERY OUTPUT_DIR
 ...
 
 Examples:
-$ python3 ksy-dl.py "network/pcap"
-$ python3 ksy-dl.py "pcap"
-$ python3 ksy-dl.py "/network/pcap"
-$ python3 ksy-dl.py "pcap.ksy"
-# python3 ksy-dl.py "google_protobuf"
+$ python3 ksy-dl.py "network/pcap" .
+$ python3 ksy-dl.py "pcap" ../kaitai # will create non-existing directories too
+$ python3 ksy-dl.py "/network/pcap" network/
+$ python3 ksy-dl.py "pcap.ksy" .
+$ python3 ksy-dl.py "google_protobuf" .
 ```
 
 ### Auto-updating the database
