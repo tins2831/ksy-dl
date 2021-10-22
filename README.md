@@ -1,6 +1,14 @@
 # ksy-dl
 Downloads `.ksy` files and their dependecies straight from the official kaitai-struct [format gallery](http://formats.kaitai.io/).
 
+This tool will:
+* Fetch any of the official specifications
+* Fetch only their dependencies
+* Organize the specifications into separate directories based on the category of the specification
+* Rewrite the import paths of the dependencies so that they use relative paths
+
+This makes it easy to include, modify, and share [official and community created](https://github.com/kaitai-io/kaitai_struct_formats) kaitai-struct specifications in individual projects.
+
 ### Requirements
 * [PyYAML](https://pyyaml.org/)
 * [BeautifulSoup4](https://www.crummy.com/software/BeautifulSoup/bs4/)
