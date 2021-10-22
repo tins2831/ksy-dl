@@ -1,5 +1,5 @@
 # ksy-dl
-Downloads `.ksy` files and their dependecies straight from the official kaitai-struct [format gallery](http://formats.kaitai.io/).
+Downloads `.ksy` files and their dependencies straight from the official kaitai-struct [format gallery](http://formats.kaitai.io/).
 
 This tool will:
 * Fetch any of the official specifications
@@ -13,7 +13,7 @@ This makes it easy to include, modify, and share [official and community created
 * [PyYAML](https://pyyaml.org/)
 * [BeautifulSoup4](https://www.crummy.com/software/BeautifulSoup/bs4/)
 ```
-$ git clone https://github.com/tins2831/urlgrep.git
+$ git clone https://github.com/tins2831/ksy-dl.git
 $ cd ksy-dl
 $ python3 -m pip install --user -r requirements.txt
 ```
