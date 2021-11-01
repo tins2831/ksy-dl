@@ -18,7 +18,7 @@ elif [[ ! -d $KAITAI_FMT_REPO ]]; then
 fi
 
 # check rw permissions
-if [[ ! -r $KAITAI_FMT_REPO ]] && [[ ! -w $KAITAI_FMT_REPO ]]; then
+if [[ ! -r $KAITAI_FMT_REPO ]] || [[ ! -w $KAITAI_FMT_REPO ]]; then
     echo "[ - ] '${KAITAI_FMT_REPO}' seems to be inaccessible." 1>&2
     exit 1
 fi
